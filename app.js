@@ -91,6 +91,7 @@
         { id: "ridge_raise", name: "Поднятие конька (за каждые +10 см, максимум +150 см)", price: 3750, type: "quantity", quantity: 0 },
 
         { id: "veranda_high", name: "Веранда (высокая крыша, 9 500 р/м²)", price: 9500, type: "area", quantity: 0 },
+        { id: "veranda_lined_rafters", name: "Веранда подшитая по стропилам", price: 2000, type: "area", quantity: 0 },
         { id: "veranda_low", name: "Веранда (низкая крыша, 8 000 р/м²)", price: 8000, type: "area", quantity: 0 },
         { id: "veranda_cabin", name: "Веранда (5 500 р/м²)", price: 5500, type: "area", quantity: 0 },
 
@@ -107,11 +108,11 @@
         rate_house_high: 12500,
         rate_house_low_osb: 9500,
         rate_house_low_lining: 10000,
-        rate_cabin: 8000,
+        rate_cabin: 9000,
         rate_int_cabin_lining: 120,
         rate_int_cabin_imitation: 370,
         rate_ins_100_min_wool: 550,
-        rate_hozblok: 5500,
+        rate_hozblok: 7500,
         rate_veranda: 9000,
         rate_ext_imitation: 250,
         rate_ext_blockhouse: 1000,
@@ -1014,6 +1015,7 @@
                     recText = `Площадь: ${recQty} м²`;
                 } else if (add.id === 'frame_upgrade' || add.id === 'ceiling_osb_12_lath'
                            || add.id === 'floor_tongue_28_add' || add.id === 'floor_board_35_150_add' || add.id === 'floor_tongue_35_add'
+                           || add.id === 'veranda_lined_rafters'
                            || add.id === 'rodent_mesh' || add.id === 'antiseptic_bottom') {
                     recQty = Math.ceil(area + getVerandaArea());
                     recText = `Площадь: ${recQty} м²`;
@@ -1179,6 +1181,7 @@
         if (add.id === 'extension_room' && !isHouse) return false;
         if (add.id === 'ceiling_osb_12_lath' && !isHouseHigh) return false;
         if (add.id === 'wall_height_raise_20' && !isHouse) return false;
+        if (add.id === 'veranda_lined_rafters' && !isHouseHigh) return false;
 
         if (add.id === 'frame_upgrade' && state.calculatorMode === 'custom') {
             const isFrame50_100 = state.selCustomInsulation === 'cold' || state.selCustomInsulation === '0' ||
@@ -1574,11 +1577,25 @@
             let length = 6;
             let width = 3;
             let isHozblok = false;
+            let hasVeranda = false;
             
             if (state.calculatorMode === 'custom') {
                 length = state.customLength;
                 width = state.customWidth;
                 isHozblok = (state.customType === 'hozblok');
+
+                if (state.customType === 'house_high' || state.customType === 'house_low') {
+                    // Площадь веранды у домов хранится без точных размеров, поэтому просто
+                    // считаем, что при наличии веранды габарит уже точно больше 6х3.
+                    hasVeranda = getVerandaArea() > 0;
+                } else if (state.customType === 'cabin' || state.customType === 'hozblok') {
+                    // У бытовки/хозблока веранда пристраивается по длине на известную глубину —
+                    // прибавляем её к длине для точного расчёта габарита.
+                    const verandaDepth = state.additionQuantities['veranda_cabin'] || 0;
+                    if (verandaDepth > 0) {
+                        length = length + verandaDepth;
+                    }
+                }
             } else {
                 const size = model.sizes.find(s => s.id === state.selectedSizeId);
                 if (size) {
@@ -1589,7 +1606,7 @@
             }
             
             const minPrice = isHozblok ? 5000 : 7000;
-            const kmRate = (length > 6 || width > 3) ? 200 : 100;
+            const kmRate = (length > 6 || width > 3 || hasVeranda) ? 200 : 100;
             
             deliveryPrice = Math.max(minPrice, state.deliveryDistance * kmRate);
         }
@@ -2093,10 +2110,10 @@
                     rate_house_high: 12500,
                     rate_house_low_osb: 9500,
                     rate_house_low_lining: 10000,
-                    rate_cabin: 8000,
+                    rate_cabin: 9000,
                     rate_int_cabin_lining: 120,
                     rate_int_cabin_imitation: 370,
-                    rate_hozblok: 5500,
+                    rate_hozblok: 7500,
                     rate_container: 9000,
                     rate_veranda: 9000,
                     rate_ext_imitation: 250,
