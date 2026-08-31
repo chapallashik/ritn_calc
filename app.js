@@ -1231,10 +1231,11 @@
                     baseRate = 8500;
                 } else if (state.selCustomInsulation === 'frame_100_kd') {
                     baseRate = 10500; // Каркас 50/100 "камерная сушка" ХК = 8500 + 2000
-                } else if (state.selCustomExterior === 'none') {
-                    // Наружная: Вагонка ВС (базовая) => 10000 р/м², независимо от внутренней (ОСБ 9мм или Вагонка ВС — одинаково)
+                } else if (state.selCustomExterior === 'none' || state.selCustomExterior === 'imitation') {
+                    // Наружная: Вагонка ВС ИЛИ Имитация бруса => 10000 р/м², независимо от внутренней
                     baseRate = customRates.rate_house_low_lining || 10000;
                 } else {
+                    // Блок-хаус / Профлист / ОСБ => 9500 р/м²
                     baseRate = customRates.rate_house_low_osb || 9500;
                 }
             } else if (state.customType === 'house_high') {
