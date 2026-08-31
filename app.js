@@ -543,12 +543,7 @@
         let floorHTML = '';
         if (type === 'house_high' || type === 'house_low') {
             floorHTML = `
-                <option value="none">Обрезная доска 25мм (базовая)</option>
-                <option value="osb12">ОСБ 12мм (+500 р/м²)</option>
-                <option value="osb15">ОСБ 15мм (+700 р/м²)</option>
-                <option value="osb18">ОСБ 18мм (+800 р/м²)</option>
-                <option value="tongue28">Шпунтованная доска 28мм (+1000 р/м²)</option>
-                <option value="tongue35">Шпунтованная доска 35мм (+1300 р/м²)</option>
+                <option value="none">Обрезная доска 25мм 1 сорт (базовая)</option>
             `;
         } else {
             floorHTML = `
@@ -1343,7 +1338,7 @@
             let floorMatCost = 0;
             if (state.selCustomFloor !== 'none') {
                 const rate = customRates[`rate_floor_${state.selCustomFloor}`] || 0;
-                floorMatCost = area * rate;
+                floorMatCost = (area + getVerandaArea()) * rate;
                 floorSum += floorMatCost;
             }
 
