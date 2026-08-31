@@ -62,6 +62,7 @@
         { id: "door_panel_6", name: "Дверь филенчатая деревянная (6 000 р)", price: 6000, type: "quantity", quantity: 0 },
         { id: "door_pvc_35", name: "Дверь входная ПВХ (35 000 р)", price: 35000, type: "quantity", quantity: 0 },
         { id: "door_wood_double", name: "Дверь деревянная распашная 1.4х1.9 м", price: 3000, type: "quantity", quantity: 0 },
+        { id: "floor_hatch", name: "Люк в полу", price: 10000, type: "quantity", quantity: 0 },
         { id: "antiseptic_bottom", name: "Антисептик дна", price: 500, type: "area", quantity: 0 },
         { id: "rodent_mesh", name: "Сетка от грызунов", price: 600, type: "area", quantity: 0 },
         { id: "block_20_20_40", name: "Блок 20х20х40", price: 500, type: "quantity", quantity: 0 },
@@ -92,7 +93,7 @@
         { id: "ridge_raise", name: "Поднятие конька (за каждые +10 см, максимум +150 см)", price: 3750, type: "quantity", quantity: 0 },
 
         { id: "veranda_high", name: "Веранда (высокая крыша, 9 500 р/м²)", price: 9500, type: "area", quantity: 0 },
-        { id: "veranda_lined_rafters", name: "Веранда подшитая по стропилам", price: 2000, type: "area", quantity: 0 },
+        { id: "veranda_lined_rafters", name: "Потолок веранды подшитый по стропилам", price: 2000, type: "area", quantity: 0 },
         { id: "veranda_low", name: "Веранда (низкая крыша, 8 000 р/м²)", price: 8000, type: "area", quantity: 0 },
         { id: "veranda_cabin", name: "Веранда (7 500 р/м²)", price: 7500, type: "area", quantity: 0 },
 
@@ -897,9 +898,9 @@
                 if (activeAdditionFilter === 'windows') {
                     if (!nameLower.includes('окн')) return;
                 } else if (activeAdditionFilter === 'doors') {
-                    if (!nameLower.includes('двер')) return;
+                    if (add.id !== 'floor_hatch' && !nameLower.includes('двер')) return;
                 } else if (activeAdditionFilter === 'area') {
-                    if (add.id === 'profile_harness' || add.id === 'veranda_cabin') return;
+                    if (add.id === 'profile_harness' || add.id === 'veranda_cabin' || add.id === 'floor_hatch') return;
                     if (add.type !== 'area' && !nameLower.includes('пол') && !nameLower.includes('ваг') && !nameLower.includes('осб') && !nameLower.includes('стена') && !nameLower.includes('покраск')) return;
                 } else if (activeAdditionFilter === 'piles') {
                     if (!nameLower.includes('сва') && !nameLower.includes('обвязк')) return;
@@ -918,12 +919,10 @@
 
             const qty = state.additionQuantities[add.id] || 0;
             const isVerandaHouseAddonDisp = (add.id === 'veranda_high' || add.id === 'veranda_low');
-            const verandaIncludedInFrameDisp = isVerandaHouseAddonDisp && state.calculatorMode === 'custom' &&
-                ['frame_150_hk', 'frame_200_hk', 'frame_150_kd', 'frame_200_kd', 'kd_150_real', 'kd_200_real'].includes(state.selCustomInsulation);
+            const verandaIncludedInFrameDisp = false; // веранда всегда оплачивается отдельно, даже при каркасах 50/150 и 50/200
             const verandaKilnSurchargeDisp = isVerandaHouseAddonDisp && state.calculatorMode === 'custom' &&
                 state.selCustomInsulation === 'frame_100_kd';
-            const price = verandaIncludedInFrameDisp ? 0
-                : verandaKilnSurchargeDisp ? (add.price || 0) + 2000
+            const price = verandaKilnSurchargeDisp ? (add.price || 0) + 2000
                 : (add.id === 'frame_upgrade') ? getFrameUpgradePrice()
                 : (add.id === 'wall_height_raise_20') ? getWallHeightRaisePrice()
                 : (add.price || 0);
@@ -1264,10 +1263,8 @@
                 baseRate = customRates[`rate_${state.customType}`] || 8000;
             }
 
-            // Каркас 50/150 / 50/200 ХК (обычный и "камерная сушка"): цена уже общая (дом + веранда), веранду отдельно не оплачиваем
-            const COMBINED_FRAME_OPTIONS = ['frame_150_hk', 'frame_200_hk', 'frame_150_kd', 'frame_200_kd'];
-            const frameIncludesVeranda = (state.customType === 'house_high' || state.customType === 'house_low') &&
-                COMBINED_FRAME_OPTIONS.includes(state.selCustomInsulation);
+            // Каркас 50/150 / 50/200 ХК (обычный и "камерная сушка"): ставка уже включает надбавку за
+            // ширину каркаса, но веранда всё равно считается ОТДЕЛЬНОЙ строкой (по своей цене) — не входит в эту площадь.
             // Для дома низкого эти ставки фиксированные (не зависят от отделки — заказчик подтвердил,
             // что в низких домах только одна позиция). Для дома высокого ставки уже посчитаны выше
             // с учётом наружной отделки (Вагонка ВС / Имитация В).
@@ -1282,7 +1279,7 @@
                     baseRate = 14500; // 8500 + 6000
                 }
             }
-            const baseArea = frameIncludesVeranda ? (area + getVerandaArea()) : area;
+            const baseArea = area;
 
             // Calculate base price: only high house scales if its height changes,
             // but for low house, cabin, and hozblok the rate is per m2 at their fixed height, so height scaling is 1.
@@ -1528,12 +1525,9 @@
             const qty = state.additionQuantities[add.id] || 0;
             if (qty > 0) {
                 const isVerandaHouseAddon = (add.id === 'veranda_high' || add.id === 'veranda_low');
-                const verandaIncludedInFrame = isVerandaHouseAddon && state.calculatorMode === 'custom' &&
-                    ['frame_150_hk', 'frame_200_hk', 'frame_150_kd', 'frame_200_kd', 'kd_150_real', 'kd_200_real'].includes(state.selCustomInsulation);
                 const verandaKilnSurcharge = isVerandaHouseAddon && state.calculatorMode === 'custom' &&
                     state.selCustomInsulation === 'frame_100_kd';
-                const effectivePrice = verandaIncludedInFrame ? 0
-                    : verandaKilnSurcharge ? add.price + 2000
+                const effectivePrice = verandaKilnSurcharge ? add.price + 2000
                     : (add.id === 'frame_upgrade') ? getFrameUpgradePrice()
                     : (add.id === 'wall_height_raise_20') ? getWallHeightRaisePrice()
                     : add.price;
