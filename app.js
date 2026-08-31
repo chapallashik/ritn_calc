@@ -58,6 +58,7 @@
         { id: "block_pads", name: "Подушки под блоки (за шт)", price: 1200, type: "quantity", quantity: 0 },
         { id: "veranda_ceiling_board", name: "Зашить потолок веранды (за м²)", price: 1000, type: "quantity", quantity: 0 },
         { id: "door_metal_12", name: "Дверь металлическая (Россия) (12 000 р)", price: 12000, type: "quantity", quantity: 0 },
+        { id: "door_metal_7cm", name: "Дверь металлическая 7 см", price: 20000, type: "quantity", quantity: 0 },
         { id: "door_panel_6", name: "Дверь филенчатая деревянная (6 000 р)", price: 6000, type: "quantity", quantity: 0 },
         { id: "door_pvc_35", name: "Дверь входная ПВХ (35 000 р)", price: 35000, type: "quantity", quantity: 0 },
         { id: "door_wood_double", name: "Дверь деревянная распашная 1.4х1.9 м", price: 3000, type: "quantity", quantity: 0 },
@@ -93,10 +94,10 @@
         { id: "veranda_high", name: "Веранда (высокая крыша, 9 500 р/м²)", price: 9500, type: "area", quantity: 0 },
         { id: "veranda_lined_rafters", name: "Веранда подшитая по стропилам", price: 2000, type: "area", quantity: 0 },
         { id: "veranda_low", name: "Веранда (низкая крыша, 8 000 р/м²)", price: 8000, type: "area", quantity: 0 },
-        { id: "veranda_cabin", name: "Веранда (5 500 р/м²)", price: 5500, type: "area", quantity: 0 },
+        { id: "veranda_cabin", name: "Веранда (7 500 р/м²)", price: 7500, type: "area", quantity: 0 },
 
         { id: "generator_daily", name: "Генератор (сутки)", price: 2500, type: "quantity", quantity: 0 },
-        { id: "material_carry", name: "Пронос материала свыше 20 м (за каждые 10 м)", price: 5000, type: "quantity", quantity: 0 },
+        { id: "material_carry", name: "Пронос материала свыше 20 м (за каждые 10 м)", price: 10000, type: "quantity", quantity: 0 },
         { id: "long_ladder", name: "Лестница на всю длину дома", price: 20000, type: "quantity", quantity: 0 },
         { id: "step_with_railing", name: "Ступень с перилами", price: 20000, type: "quantity", quantity: 0 },
         { id: "extension_room", name: "Пристройка", price: 20000, type: "quantity", quantity: 0 },
@@ -898,12 +899,12 @@
                 } else if (activeAdditionFilter === 'doors') {
                     if (!nameLower.includes('двер')) return;
                 } else if (activeAdditionFilter === 'area') {
-                    if (add.id === 'profile_harness') return;
+                    if (add.id === 'profile_harness' || add.id === 'veranda_cabin') return;
                     if (add.type !== 'area' && !nameLower.includes('пол') && !nameLower.includes('ваг') && !nameLower.includes('осб') && !nameLower.includes('стена') && !nameLower.includes('покраск')) return;
                 } else if (activeAdditionFilter === 'piles') {
                     if (!nameLower.includes('сва') && !nameLower.includes('обвязк')) return;
                 } else if (activeAdditionFilter === 'other') {
-                    if (nameLower.includes('окн') || nameLower.includes('двер') || add.type === 'area' || nameLower.includes('пол') || nameLower.includes('ваг') || nameLower.includes('осб') || nameLower.includes('стена') || nameLower.includes('покраск') || nameLower.includes('сва') || nameLower.includes('обвязк')) return;
+                    if (add.id !== 'veranda_cabin' && (nameLower.includes('окн') || nameLower.includes('двер') || add.type === 'area' || nameLower.includes('пол') || nameLower.includes('ваг') || nameLower.includes('осб') || nameLower.includes('стена') || nameLower.includes('покраск') || nameLower.includes('сва') || nameLower.includes('обвязк'))) return;
                 }
             }
 
